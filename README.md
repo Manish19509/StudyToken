@@ -2,29 +2,19 @@
 This is the project consisting of a smart contract in Solidity, called PropertyTrader, and a web-based JavaScript script to complement it using the Web3 library to integrate it with MetaMask. In this smart contract, properties can be added, updated, purchased, and sold. The JavaScript code communicates with the Ethereum blockchain for such actions through a web interface.
 
 ## Function
->>addProperty : Function to add a new property (only owner).
+>>mintToken : Function to mint new tokens (only owner).
 >>
->>updatePropertyPrice : Function to update the price of a property (only owner).
+>>rewardTokens : Function to transfers tokens from the sender to a specified address and records the reward.
 >>
->>propertyExists: Function to check if a property exists.
+>>burnTokens : Function to burns tokens from the sender's balance.
 >>
->>buyProperty: Function to simulate buying a property.
+>>checkRewardHistory : Function to returns the total rewards received by the sender.
 >>
->>sellProperty: Function to simulate selling a property (currently a placeholder).
+>>viewTotalRewards : Function to returns the total amount of tokens rewarded, viewable only by the instructor.
 
 
 ### Description
 This is a project consisting of a Solidity smart contract called `PropertyTrader` and a frontend JavaScript application that connects with MetaMask through Web3.js. It provides a smart contract for running property management, through which users can create, update, buy, and sell properties on the Ethereum blockchain. On top of this, the JavaScript code provides user interaction through a web interface, thus having nice integration with MetaMask to perform blockchain transactions.
-
->> Structs:
-        1. The property struct stores information about property
-
->> Owner Management:
-        1. The owner address is set to the contract deployer and is the only entity allowed to add or update properties.
-
->> Access Control:
-        The onlyOwner modifier restricts certain functions to be called only by the contract owner.
-
 
 #### Getting Started
 
@@ -32,69 +22,63 @@ This is a project consisting of a Solidity smart contract called `PropertyTrader
 #### solidity
 ```
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.10;
 
-contract PropertyTrader {
-    // Enum to represent property types
-    enum PropertyType { House, Flat }
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-    // Struct to store information about a property
-    struct Property {
-        string name;
-        PropertyType propertyType;
-        uint256 price; // Price in wei
-    }
+contract StudyToken is ERC20 {
+    address private instructor;
+    uint256 private totalRewards;
 
-    // Mapping of property names to their details
-    mapping(string => Property) public properties;
+    mapping(address => uint256) private rewards;
 
-    // Address of the owner (who can update property prices)
-    address public owner;
-
-    // Event emitted when a property price is updated
-    event PropertyPriceUpdated(string name, uint256 price);
-
-    constructor() {
-        owner = msg.sender; // Set the contract deployer as the owner
-    }
-
-    // Function to add a new property (only owner)
-    function addProperty(string memory name, PropertyType propertyType, uint256 price) public onlyOwner {
-        require(!propertyExists(name), "Property already exists");
-        properties[name] = Property(name, propertyType, price);
-    }
-
-    // Function to update the price of a property (only owner)
-    function updatePropertyPrice(string memory name, uint256 price) public onlyOwner {
-        require(propertyExists(name), "Property does not exist");
-        properties[name].price = price;
-        emit PropertyPriceUpdated(name, price);
-    }
-
-    // Function to check if a property exists
-    function propertyExists(string memory name) public view returns (bool) {
-        return bytes(properties[name].name).length > 0;
-    }
-
-    // Function to simulate buying a property
-    function buyProperty(string memory name) public payable {
-        require(propertyExists(name), "Property does not exist");
-        Property storage property = properties[name];
-        uint256 propertyPrice = property.price;
-        require(msg.value >= propertyPrice, "Insufficient funds");
-        // Simulate property purchase logic (e.g., update ownership records)
-    }
-
-    // Function to simulate selling a property (currently a placeholder)
-function sellProperty(string memory name) public view {
-    require(propertyExists(name), "Property does not exist");
-    // Simulate property selling logic (e.g., update ownership records)
-}
-
-    // Modifier to restrict functions to the contract owner
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action");
+    modifier onlyInstructor() {
+        require(
+            msg.sender == instructor,
+            "Only the instructor can perform this action"
+        );
         _;
+    }
+
+    constructor(uint256 initialSupply) ERC20("StudyToken", "STK") {
+        _mint(msg.sender, initialSupply);
+        instructor = msg.sender;
+    }
+
+    function mintTokens(uint256 amount) external onlyInstructor {
+        require(amount > 0, "Mint amount must be greater than zero");
+        _mint(instructor, amount);
+    }
+
+    function rewardTokens(address to, uint256 amount) public {
+        require(to != address(0), "Cannot reward to the zero address");
+        require(amount > 0, "Reward amount must be greater than zero");
+        require(
+            balanceOf(msg.sender) >= amount,
+            "Insufficient balance to reward"
+        );
+
+        _transfer(msg.sender, to, amount);
+        rewards[msg.sender] += amount;
+        totalRewards += amount;
+    }
+
+    function burnTokens(uint256 amount) public {
+        require(amount > 0, "Burn amount must be greater than zero");
+        require(
+            balanceOf(msg.sender) >= amount,
+            "Insufficient balance to burn"
+        );
+
+        _burn(msg.sender, amount);
+    }
+
+    function checkRewardHistory() public view returns (uint256) {
+        return rewards[msg.sender];
+    }
+
+    function viewTotalRewards() public view onlyInstructor returns (uint256) {
+        return totalRewards;
     }
 }
 ```
