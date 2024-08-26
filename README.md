@@ -1,5 +1,5 @@
-# PropertyTrader Smart Contract
-This is the project consisting of a smart contract in Solidity, called PropertyTrader, and a web-based JavaScript script to complement it using the Web3 library to integrate it with MetaMask. In this smart contract, properties can be added, updated, purchased, and sold. The JavaScript code communicates with the Ethereum blockchain for such actions through a web interface.
+# StudyToken Contract
+The StudyToken contract is an ERC20 token that includes the minting(only owner), reward and combustion aspects of the token. It allows the trainer to generate tokens, users to pay others, and each holder to burn their tokens.
 
 ## Function
 >>mintToken : Function to mint new tokens (only owner).
@@ -14,7 +14,7 @@ This is the project consisting of a smart contract in Solidity, called PropertyT
 
 
 ### Description
-This is a project consisting of a Solidity smart contract called `PropertyTrader` and a frontend JavaScript application that connects with MetaMask through Web3.js. It provides a smart contract for running property management, through which users can create, update, buy, and sell properties on the Ethereum blockchain. On top of this, the JavaScript code provides user interaction through a web interface, thus having nice integration with MetaMask to perform blockchain transactions.
+The StudyToken contract is an ERC20-compliant token designed for educational environments. The contract allows the coach to generate new tokens and distribute them to participants as rewards. Users can reward others by transferring tokens and also burn their own tokens to reduce the overall supply.
 
 #### Getting Started
 
